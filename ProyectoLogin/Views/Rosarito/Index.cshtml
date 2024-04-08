@@ -1,0 +1,250 @@
+﻿@{
+    ViewBag.Title = "Encuestas Alcaldía Tj";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.css">
+
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+
+</head>
+<body>
+    <input type="hidden" id="a15aq25" value="@ViewBag.SessionId">
+    <div id="app">
+        <div v-if="!isMobile">
+            <div class="container">
+                <div class="row">
+                    <div class="col text-center">
+                        <h2>Por favor, accede a este sitio desde un teléfono.</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div v-else>
+            <div class="container">
+                <div class="row section-title">
+                    <h2 class="fs-1">Si hoy fueran las elecciones, para presidente municipal playas de rosarito 2024 ¿Por quien votarias?</h2>
+                    <div v-for="candidato in candidatos" :key="candidato.id" class="col-lg-6 col-md-6">
+                        <div class="text-white text-center mb-4 votcard shadow-md bg-white p-4 pt-5">
+                            <div style="position: relative;">
+                                <img class="rounded-pill shadow-md p-2" :src="candidato.imagen1" alt="" style="width: 100%;">
+                                <img class="rounded-pill shadow-md p-2" :src="candidato.imagen2" alt="Imagen secundaria" style="position: absolute; bottom: 0; right: 0;">
+                            </div>
+                            <div class="text-center">
+                                <h4 class="mt-3 fs-5 mb-1 fw-bold" style="color: dimgray;">{{ candidato.nombre }}</h4>
+                                <h6 class="fs-7" style="color: black;">Postulándose para ser:</h6><p><h6 class="text-primary fw-bold">{{ candidato.cargo }}</h6></p>
+                                <input type="hidden" :id="'idOpcion' + candidato.id" :name="'idOpcion' + candidato.id" :value="candidato.id" />
+                                <button type="button" class="btn btn-danger fw-bolder px-4 ms-2 fs-8" v-on:click="votar(candidato.id, '@ViewBag.parametro', a15aq25)">Votar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                candidatos: [
+                    { id: 1, nombre: "Rocio Adame Muñoz", cargo: "Presidente Municipal Playas de Rosarito", imagen1: "../img/testimonial/member-01.jpg", imagen2: "../img/testimonial/member-partido-12.jpg" },
+                    { id: 3, nombre: "Karely Leal Ramos", cargo: "Presidente Municipal Playas de Rosarito", imagen1: "../img/testimonial/member-02.jpg", imagen2: "../img/testimonial/member-partido-01.jpg" },
+                    { id: 2, nombre: "Fernando Serrano Garcia", cargo: "Presidente Municipal Playas de Rosarito", imagen1: "../img/testimonial/member-03.jpg", imagen2: "../img/testimonial/member-partido-pri.jpg" },
+                    { id: 4, nombre: "Francisco Guzman Lopez", cargo: "Presidente Municipal Playas de Rosarito", imagen1: "../img/testimonial/member-04.jpg", imagen2: "../img/testimonial/member-partido-prd.jpg" },
+                    { id: 5, nombre: "Mirna Rincon Vargas", cargo: "Presidente Municipal Playas de Rosarito", imagen1: "../img/testimonial/member-06.jpg", imagen2: "../img/testimonial/member-partido-pes.jpg" },
+
+                ],
+                isMobile: false,
+                a15aq25: ''
+            },
+            mounted() {
+                this.detectDevice();
+                window.addEventListener('resize', this.detectDevice);
+                window.addEventListener('devtoolschange', this.detectDeveloperTools);
+                this.detectarHerramientasDesarrollador();
+                this.bloquearCombinacionTeclas();
+                this.a15aq25 = document.getElementById('a15aq25').value;
+            },
+            methods: {
+                detectarHerramientasDesarrollador() {
+                    // Detectar si las herramientas de desarrollador están abiertas
+                    window.addEventListener('devtoolschange', event => {
+                        if (event.detail.isOpen) {
+                            console.log('¡Cuidado! El uso de las herramientas de desarrollo puede estar sujeto a restricciones.');
+                        }
+                    });
+
+                    // Detectar clic derecho
+                    window.addEventListener('contextmenu', event => {
+                        console.log('¡Cuidado! El clic derecho está deshabilitado en esta página.');
+                        event.preventDefault(); // Evita que aparezca el menú contextual
+                    });
+                },
+                bloquearCombinacionTeclas() {
+                    // Bloquear combinación de teclas para abrir las herramientas de desarrollo
+                    window.addEventListener('keydown', event => {
+                        if (event.keyCode === 123 || (event.ctrlKey && event.shiftKey && event.keyCode === 73)) {
+                            // 123 es el código de tecla para F12
+                            // event.ctrlKey && event.shiftKey && event.keyCode === 73 corresponde a Ctrl+Shift+I
+                            event.preventDefault(); // Evitar que se abran las herramientas de desarrollo
+                        }
+                    });
+                },
+                detectDevice() {
+                    this.isMobile = window.innerWidth <= 768;
+                },
+                detectDeveloperTools(event) {
+                    if (event.detail.isOpen) {
+                        Swal.fire({
+                            title: 'Por favor, cierra las herramientas de desarrollador para acceder a esta página.',
+                            icon: 'warning',
+                            confirmButtonText: 'Aceptar',
+                            allowOutsideClick: false
+                        });
+                    }
+                },
+
+                votar(idOpcion, param) {
+
+
+                    const esDispositivoMovil = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+                    if (!esDispositivoMovil) {
+                        // Mostrar un mensaje de error
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'El voto solo está disponible desde dispositivos móviles.',
+                            icon: 'error',
+                            confirmButtonText: 'Aceptar',
+                            allowOutsideClick: false
+                        });
+                        return;
+                    }
+
+                    // Mostrar el SweetAlert2 con el reCAPTCHA
+                    Swal.fire({
+                        title: 'Verificar',
+                        html: '<div id="recaptcha"></div>',
+                        willOpen: function () {
+                            grecaptcha.render('recaptcha', {
+                                'sitekey': '6LfCWpEpAAAAAD7_IeOvHRfmyZFR9cBZl4iw6b7I'
+                            });
+                        },
+                        preConfirm: function () {
+                            return new Promise(function (resolve) {
+                                // Verificar si el reCAPTCHA se completó
+                                if (grecaptcha.getResponse().length !== 0) {
+                                    resolve();
+                                } else {
+                                    // Mostrar un mensaje de error si el reCAPTCHA no se completó
+                                    Swal.showValidationMessage(`Please verify that you're not a robot`);
+                                    resolve(false);
+                                }
+                            });
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // El usuario confirmó el SweetAlert, proceder con el voto
+                            const datos = {
+                                idOpcion: idOpcion,
+                                parametro: param,
+                                navegador: navigator.userAgent,
+                                a15aq25: this.a15aq25 // Añadir el parámetro a15aq25 al cuerpo de la solicitud
+                            };
+
+                            const url = '/Rosarito/Vota';
+
+                            // Enviar la solicitud POST
+                            axios.post(url, datos)
+                                .then(response => {
+                                    if (response.data.exito) {
+                                        this.mostrarAlertaExito();
+                                    } else {
+                                        this.mostrarAlertaError();
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error al votar:', error);
+                                    this.mostrarAlertaError();
+                                });
+                        }
+                    });
+
+
+
+
+                },
+                mostrarAlertaExito() {
+                    Swal.fire({
+                        title: '¡Gracias por tu participación!',
+                        icon: 'success',
+                        confirmButtonText: 'Aceptar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Redireccionar a la página de estadísticas con el parámetro ViewBag
+                            window.location.href = '/Rosarito/Estadisticas?zona=@ViewBag.parametro';
+                        }
+                    });
+                },
+                mostrarAlertaError() {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Ya has participado anteriormente o se produjo un error al procesar tu voto.',
+                        icon: 'error',
+                        confirmButtonText: 'Aceptar',
+                        allowOutsideClick: false
+                    });
+                }
+            },
+            beforeDestroy() {
+                window.removeEventListener('resize', this.detectDevice);
+                window.removeEventListener('devtoolschange', this.detectDeveloperTools);
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+<script>
+    window.onload = function () {
+        // Realizar una solicitud AJAX al controlador para verificar si el usuario está accediendo desde un teléfono
+        $.ajax({
+            url: '@Url.Action("VerificarDispositivo", "Rosarito")',
+            type: 'GET',
+            success: function (response) {
+                // Si la respuesta indica que el usuario no está accediendo desde un teléfono, mostrar la alerta
+                if (!response.esTelefono) {
+                    Swal.fire({
+                        title: 'Por favor, accede a este sitio desde un teléfono.',
+                        icon: 'warning',
+                        confirmButtonText: 'Aceptar',
+                        allowOutsideClick: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.reload(); // Recargar la página al aceptar la alerta
+                        }
+                    });
+                }
+            }
+        });
+    };
+</script>
+
+<br /><br />
+
+
+
+
+
+

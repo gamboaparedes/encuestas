@@ -1,0 +1,37 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<style>
+    .background-image {
+        background-image: url('../img/fondo.jpg');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        min-height: 100vh; /* Establece la altura mínima de la imagen para ocupar toda la pantalla */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+
+    .content-container {
+        background-color: rgba(0, 0, 0, 0.5); /* Fondo oscuro semitransparente */
+        padding: 20px; /* Agrega un poco de espacio alrededor del contenido */
+    }
+
+    .text-white {
+        color: white; /* Texto blanco */
+    }
+
+    .font-weight-bold {
+        font-weight: bold; /* Texto en negrita */
+    }
+</style>
+
+<div class="background-image">
+    <div class="content-container text-center">
+        <h1 class="display-4 text-white">Bienvenido</h1>
+        <h1 class="display-4 text-white">@ViewData["nombreUsuario"]</h1>
+</div>
+</div>

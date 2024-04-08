@@ -1,0 +1,52 @@
+﻿@model List<votacion>
+
+@{
+    ViewBag.Title = "Estadisticas";
+
+    // Ordenar la lista manualmente por el número de votos de mayor a menor
+    var resultadosOrdenados = Model.OrderByDescending(v => v.Count).ToList();
+}
+
+<div class="container">
+    <div class="row section-title">
+        <h2 class="fs-1">Resultado de la votación</h2>
+    </div>
+
+    <div class="row mb-5">
+            @foreach (var voto in resultadosOrdenados)
+            {
+                double porcentaje = ((double)voto.Count / ViewBag.TotalVotos) * 100;
+                string colorBarra = "";
+
+                if (voto.IdVoto == 1)
+                {
+                    colorBarra = "bg-warning";
+                }
+                else if (voto.IdVoto == 2)
+                {
+                    colorBarra = "bg-success";
+                }
+                // Agrega el resto de los colores aquí
+
+                <div class="col-md-6 mb-4">
+                    <div class="row shadow-md p-2 m-0 rounded shadow-md bg-white">
+                        <div style="display: flex;">
+                            <!-- Imagen del candidato -->
+                            <img class="rounded-pill shadow-md p-2" src="@voto.CandidatoImagen" alt="" style="width: 30%;width: 150px;" height="150px; margin-right: 10px;">
+
+
+                        <img class="rounded-pill shadow-md p-2" src="@voto.PartidoImagen" alt="Imagen secundaria" style="width: 150px;" height="150px">
+                        </div>
+
+                        <div class="col-md-9 align-self-center">
+                            <h4 class="mt-3 fs-5 mb-1 fw-bold">@voto.CandidatoNombre</h4>
+                            <p class="fs-8 mb-2 fw-bold">Votos : @voto.Count</p>
+                            <div class="progress">
+                                <div class="progress-bar @colorBarra" role="progressbar" aria-label="Example with label" style="width: @(porcentaje.ToString("0.00"))%;" aria-valuenow="@porcentaje" aria-valuemin="0" aria-valuemax="100">@porcentaje.ToString("0.00")%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+    </div>
+</div>
